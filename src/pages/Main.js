@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import { getBlogs, likeBlog, readlikeBlog, createCommentBlog, readCommentBlog } from '../store/blog';
+import { toast } from 'react-toastify';
 function Main() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -35,9 +36,10 @@ function Main() {
   
     const handleViewDetails = (blogId) => {
       if (currentUser) {
-        navigate(`/blogs/${blogId}`);
+        navigate(`/blog/${blogId}`);
       } else {
         alert('You need to be logged in to view blog details.');
+        toast.error('You need to be logged in to view blog details.');
       }
     };
   
@@ -52,14 +54,14 @@ function Main() {
                   <img
                     src={blog.image}
                     alt={blog.title}
-                    className="w-full h-48 object-cover cursor-pointer"
+                    className="w-full h-48 object-cover cursor-pointer scale-94 hover:scale-110 duration-300"
                     onClick={() => handleViewDetails(blog.id)}
                   />
                   <div className="p-4">
                     <h2 className="text-xl font-semibold text-gray-900">{blog.title}</h2>
                     <p className="text-gray-600 mt-2">By {blog.author}</p>
                     <p className="text-gray-500 text-sm mt-1">
-                      {new Date(blog.post_views).toLocaleDateString()} - Last viewed {blog.lastView}
+                      {new Date(blog.publish_date).toLocaleDateString()} - Last viewed {blog.lastView}
                     </p>
                     <div className="mt-4 flex items-center justify-between">
                       <div className="flex space-x-4 text-gray-600">

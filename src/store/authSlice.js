@@ -13,7 +13,7 @@ const authSlice = createSlice({
     email: "",
   },
   reducers: {
-    login: (state, action) => {
+    auth (state, action)  {
       state.currentUser = action.payload.username;
       state.token = action.payload.token;
       state.email = action.payload.email;
@@ -24,16 +24,18 @@ const authSlice = createSlice({
 export const login = (userInfo, navigate) => async (dispatch) => {
   try {
     const res = await axios.post(`${url}/users/auth/login/`, userInfo);
-    if (!res.data.token) throw Error("Login Failed");
+    console.log(res.data);
+    if (!res.data.key) throw Error("Login Failed");
     const playload = {
-      token: res.data.token,
-      currentUser: res.data.username,
+      token: res.data.key,
+      currentUser: res.data.user.username,
+      email: res.data.user.email,
     };
     dispatch(authSlice.actions.auth(playload));
 
-    sessionStorage.setItem("username", res.data.username);
-    sessionStorage.setItem("token", res.data.token);
-    sessionStorage.setItem("email", res.data.email);
+    sessionStorage.setItem("username", res.data.user.username);
+    sessionStorage.setItem("token", res.data.key);
+    sessionStorage.setItem("email", res.data.user.email);
     toast.success("Login Successful");
     navigate("/");
   } catch (error) {
@@ -45,17 +47,17 @@ export const login = (userInfo, navigate) => async (dispatch) => {
 export const register = (userInfo, navigate) => async (dispatch) => {
   try {
     const res = await axios.post(`${url}/users/register/`, userInfo);
-    if (!res.data.token) throw Error("Registration Failed");
+    if (!res.data.key) throw Error("Registration Failed");
     const playload = {
-      token: res.data.token,
-      currentUser: res.data.username,
-      email: res.data.email,
+      token: res.data.key,
+      currentUser: res.data.user.username,
+      email: res.data.user.email,
     };
     dispatch(authSlice.actions.auth(playload));
 
-    sessionStorage.setItem("username", res.data.username);
-    sessionStorage.setItem("token", res.data.token);
-    sessionStorage.setItem("email", res.data.email);
+    sessionStorage.setItem("username", res.data.user.username);
+    sessionStorage.setItem("token", res.data.key);
+    sessionStorage.setItem("email", res.data.user.email);
     toast.success("Registration Successful");
     navigate("/");
   } catch (error) {
@@ -63,25 +65,19 @@ export const register = (userInfo, navigate) => async (dispatch) => {
   }
 };
 
-export const logout = (navigate) => {
-  return async (dispatch) => {
-    try {
-      const token = atob.sessionStorage.getItem("token");
-      const res = await axios.post(`${url}/users/auth/logout/`, {
-        Headers: {
-          Authorization: `Token ${token}`,
-        },
-      });
-      if (res.status === 200) {
-        dispatch(authSlice.actions.auth({ token: false, currentUser: false }));
-        sessionStorage.clear();
-        toast.success("Logout Successful");
-        navigate("/");
-      }
-    } catch (error) {
-      toast.error("Logout Failed");
+export const logout = (navigate) => async (dispatch) => {
+  try {
+    const res = await axios.post(`${url}/users/auth/logout/`);
+    if (res.status === 200 || res.status === 204) {
+      const payload = { token: false, currentUser: false };
+      dispatch(authSlice.actions.auth(payload));
+      sessionStorage.clear();
+      toast.success("Logout Successful");
+      navigate("/");
     }
-  };
+  } catch (error) {
+    toast.error("Logout Failed");
+  }
 };
 
 export const changePassword = (newPassword) => {
@@ -103,6 +99,28 @@ export const changePassword = (newPassword) => {
       toast.error("Password Change Failed");
     }
   };
+};
+
+
+export const UserProfile = () => async (dispatch) => {
+  try {
+    const res = await axios(`${url}/users/auth/user/`);
+    if (res.status !== 200) {
+        throw new Error('Failed to fetch user profile');
+    }
+    const payload = {
+      pk: res.data.pk,
+      username: res.data.username,
+      email: res.data.email,
+      first_name: res.data.first_name,
+      last_name: res.data.last_name,
+    };
+    dispatch(authSlice.actions.auth(payload));
+    toast.success("User profile fetched successfully");
+  } catch (error) {
+    toast.error("Failed to fetch user profile");
+    console.error(error);
+  }
 };
 
 export default authSlice.reducer;

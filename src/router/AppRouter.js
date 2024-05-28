@@ -21,7 +21,7 @@ function AppRouter() {
           <Route path="" element={<Layout />}>
             <Route path="create" element={<CreateBlog />} />
             <Route path="profile" element={<UserProfile />} />
-            {/* <Route path="/:id" element={<BlogDetails />} /> */}
+            <Route path=":id" element={<BlogDetails />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Route>

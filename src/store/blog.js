@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { createSlice } from "@reduxjs/toolkit";
 
-const url = "https://48217.fullstack.clarusway.com";
+const url =  "https://48217.fullstack.clarusway.com";
 
 const token = sessionStorage.getItem("token");
 
@@ -29,11 +29,11 @@ const blogSlice = createSlice({
       state.data[index] = action.payload;
     },
     likeBlog: (state, action) => {
-        const index = state.data.findIndex((b) => b.id === action.payload);
-        if (index !== -1) {
-          state.data[index].likes += 1;
-        }
-      },
+      const index = state.data.findIndex((b) => b.id === action.payload);
+      if (index !== -1) {
+        state.data[index].likes = state.data[index].likes === 1 ? 0 : 1;
+      }
+    },
       readlikeBlog: (state, action) => {
         const index = state.data.findIndex((b) => b.id === action.payload);
         if (index !== -1 && state.data[index].likes > 0) {
@@ -70,11 +70,12 @@ export const getBlogs = () => async (dispatch) => {
 
 export const createBlog = (blog) => async (dispatch) => {
   try {
+    const token = sessionStorage.getItem("token"); 
     const res = await axios(`${url}/api/blogs/`, {
       method: "POST",
       data: blog,
-      'content-Type': 'application/json',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Token ${token}`,
       },
     });
@@ -86,7 +87,6 @@ export const createBlog = (blog) => async (dispatch) => {
     console.log(error);
   }
 };
-
 export const readBlog = (id) => async (dispatch) => {
   try {
     const res = await axios(`${url}/api/blogs/${id}/`, {
